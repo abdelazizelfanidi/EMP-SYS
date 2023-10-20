@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-4">Payment Details</h1>
+        <p class="text-gray-600 text-center mb-4">Please review the payment details before proceeding.</p>
+        <div class="bg-white p-4 shadow-md rounded-md text-center">
+            <p class="text-xl font-semibold">Employee: {{ employee.name }}</p>
+            <p class="text-gray-600">Position: {{ employee.position }}</p>
+            <p class="text-gray-600">Salary: ${{ employee.salary }}</p>
+            <p class="text-gray-600">City: {{ employee.city }}</p>
+            <p class="text-gray-600">Employee ID: {{ employee.employee_id }}</p>
+            <p class="text-gray-600 mt-4">Payment Amount: ${{ amount }}</p>
+            <div class="mt-4">
+                <label for="paymentAmount" class="block text-sm font-medium text-gray-700">Enter Payment Amount:</label>
+                <input type="number" id="paymentAmount" name="paymentAmount" class="mt-1 p-2 border border-gray-300 rounded-md w-40" required>
+            </div>
+            <div class="mt-4">
+                <label for="bankCardNumber" class="block text-sm font-medium text-gray-700">Bank Card Number:</label>
+                <input type="text" id="bankCardNumber" name="bankCardNumber" class="mt-1 p-2 border border-gray-300 rounded-md w-60" required>
+            </div>
+            <div class="mt-8">
+                <button id="checkout-button" class="bg-blue-500 text-white py-2 px-16 rounded-md mx-auto">Proceed to Payment</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        var stripe = Stripe('pk_test_51O2xVYDwh5k7KSXmPyqU71ikdu8RyjXwANCbZzjT9h2NwYLiGbo1UMid2rOIGLlYpFzsFspS622jFTR5kFF4PyIA00zUDZlwhi'); // Replace with your actual Stripe secret key
+        var checkoutButton = document.getElementById('checkout-button');
+
+        checkoutButton.addEventListener('click', function () {
+            var paymentAmount = document.getElementById('paymentAmount').value;
+            var bankCardNumber = document.getElementById('bankCardNumber').value;
+
+            stripe.redirectToCheckout({
+                lineItems: [{
+                    price: 'price_1JMhjLGSbPj4XBCoUf3X23L0',
+                    quantity: 1,
+                }],
+                mode: 'payment',
+                successUrl: '{{ url_for("success") }}?amount=' + paymentAmount,
+                cancelUrl: '{{ url_for("cancel") }}',
+                payment_method_data: {
+                    billing_details: {
+                        card: {
+                            number: bankCardNumber,
+                        },
+                    },
+                },
+            }).then(function (result) {
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
